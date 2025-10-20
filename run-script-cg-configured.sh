@@ -74,7 +74,7 @@ NTP_ENABLED="true"
 NTP_PRIMARY_SERVER="1.2.3.5"
 NTP_SECONDARY_SERVER="1.2.3.6"
 NTP_VERSION="4"
-TIMEZONE="America/New_York"
+TIMEZONE="America / New_York"
 
 # DNS SETTINGS (configure DNS details and enable if needed)
 DNS_ENABLED="true"
