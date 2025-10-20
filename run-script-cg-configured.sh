@@ -66,8 +66,7 @@ SNMP_ENABLED="true"
 SNMP_AGENT_STATE="on"
 SNMP_CONTACT="dmorris@checkpoint.com"
 SNMP_TRAP_RECEIVER_IP="1.2.3.5"
-SNMP_TRAP_VERSION_V3="v3"
-SNMP_TRAP_VERSION_V2="v2"
+SNMP_VERSION="v3"
 SNMP_COMMUNITY="public"
 
 # NTP AND TIMEZONE SETTINGS (configure time settings and enable if needed)
@@ -177,8 +176,18 @@ if [ "$SNMP_ENABLED" = "true" ]; then
     echo "Configuring SNMP..."
     run "set snmp agent $SNMP_AGENT_STATE"
     run "set snmp contact \"$SNMP_CONTACT\""
-    run "set snmp traps receiver $SNMP_TRAP_RECEIVER_IP version $SNMP_TRAP_VERSION_V3"
-    run "set snmp traps receiver $SNMP_TRAP_RECEIVER_IP community $SNMP_COMMUNITY version $SNMP_TRAP_VERSION_V2"
+    
+    # Configure SNMP trap receiver based on version
+    if [ "$SNMP_VERSION" = "v3" ]; then
+        # SNMP v3 uses USM authentication, no community string
+        run "add snmp traps receiver $SNMP_TRAP_RECEIVER_IP version v3"
+    elif [ "$SNMP_VERSION" = "v2" ] || [ "$SNMP_VERSION" = "v2c" ]; then
+        # SNMP v2/v2c requires community string
+        run "add snmp traps receiver $SNMP_TRAP_RECEIVER_IP community $SNMP_COMMUNITY version v2"
+    elif [ "$SNMP_VERSION" = "v1" ]; then
+        # SNMP v1 requires community string
+        run "add snmp traps receiver $SNMP_TRAP_RECEIVER_IP community $SNMP_COMMUNITY version v1"
+    fi
 fi
 
 # Configure NTP and timezone if enabled
