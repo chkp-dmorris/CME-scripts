@@ -24,7 +24,7 @@ PROXY_PORT="YOUR_PROXY_PORT"
 RBA_ENABLED="false"
 RBA_ROLE_TACP0="YOUR_LEVEL0_ROLE_NAME"
 RBA_ROLE_TACP15="YOUR_ADMIN_ROLE_NAME"
-RBA_TACP0_FEATURES="tacacs_enable,selfpasswd"
+RBA_TACP0_FEATURES="YOUR_TACP0_FEATURES"
 
 # TACACS+ SERVER SETTINGS (configure values and enable if needed)
 TACACS_ENABLED="false"
@@ -42,16 +42,24 @@ LOCAL_USER_HOMEDIR="/home/YOUR_USERNAME"
 LOCAL_USER_SHELL="/etc/cli.sh"
 LOCAL_USER_REALNAME="YOUR_REAL_NAME"
 LOCAL_USER_PASSWORD_HASH='YOUR_PASSWORD_HASH'
-LOCAL_USER_ROLE="adminRole"
+LOCAL_USER_ROLE="YOUR_USER_ROLE"
 
-# SSH KEY CONFIGURATION (configure your SSH public key and enable if needed)
+# SSH KEY CONFIGURATION (configure SSH user and keys, enable if needed)
 SSH_KEYS_ENABLED="false"
+SSH_USERNAME="YOUR_SSH_USERNAME"
+SSH_USER_UID="YOUR_SSH_USER_UID"
+SSH_USER_GID="YOUR_SSH_USER_GID"
+SSH_USER_HOMEDIR="/home/YOUR_SSH_USERNAME"
+SSH_USER_SHELL="/etc/cli.sh"
+SSH_USER_REALNAME="YOUR_SSH_USER_REALNAME"
+SSH_USER_PASSWORD_HASH="YOUR_SSH_USER_PASSWORD_HASH"
+SSH_USER_ROLE="YOUR_SSH_USER_ROLE"
 SSH_PUBLIC_KEY="YOUR_SSH_PUBLIC_KEY_HERE"
 
 # SYSLOG SERVER SETTINGS (configure server details and enable if needed)
 SYSLOG_ENABLED="false"
 SYSLOG_SERVER_IP="YOUR_SYSLOG_SERVER_IP"
-SYSLOG_LEVEL="info"
+SYSLOG_LEVEL="YOUR_SYSLOG_LEVEL"
 
 # SNMP SETTINGS (configure SNMP details and enable if needed)
 SNMP_ENABLED="false"
@@ -81,12 +89,22 @@ DOMAIN_NAME="YOUR_DOMAIN_NAME"
 # SCRIPT EXECUTION BEGINS HERE
 # =============================================================================
 
+# Setup logging
+LOGFILE="/var/log/cme_custom_gateway_scripts.log"
+exec > >(tee -a "$LOGFILE") 2>&1
+
+echo "=========================================="
+echo "Check Point Gateway Configuration Script"
+echo "Started: $(date)"
+echo "=========================================="
+
 set -e
 lock=""
 lock="$(confLock -o -iadmin)"
 
 function run {
         local cmd="$1"
+        echo "Executing: $cmd"
         clish -l "$lock" -s -c "$cmd"
 }
 
@@ -136,24 +154,17 @@ if [ "$LOCAL_USER_ENABLED" = "true" ]; then
     run "add rba user $LOCAL_USERNAME roles $LOCAL_USER_ROLE"
 fi
 
-# Configure SSH keys if enabled (for R80.30 or lower)
+# Configure SSH keys if enabled (using CLISH commands)
 if [ "$SSH_KEYS_ENABLED" = "true" ]; then
-    echo "Configuring SSH keys..."
-    cd /home/admin
-    mkdir -p .ssh 
-    chmod u=rwx,g=,o= .ssh
-    touch .ssh/authorized_keys
-    touch .ssh/authorized_keys2
-    chmod u=rw,g=,o= .ssh/authorized_keys
-    chmod u=rw,g=,o= .ssh/authorized_keys2
-
-    cat >> .ssh/authorized_keys <<EOF
-$SSH_PUBLIC_KEY
-EOF
-
-    cat >> .ssh/authorized_keys2 <<EOF
-$SSH_PUBLIC_KEY
-EOF
+    echo "Configuring SSH user and keys..."
+    # Create/configure the SSH user with all necessary parameters
+    run "add user $SSH_USERNAME uid $SSH_USER_UID homedir $SSH_USER_HOMEDIR"
+    run "set user $SSH_USERNAME gid $SSH_USER_GID shell $SSH_USER_SHELL"
+    run "set user $SSH_USERNAME realname \"$SSH_USER_REALNAME\""
+    run "set user $SSH_USERNAME password-hash $SSH_USER_PASSWORD_HASH"
+    run "set user $SSH_USERNAME ssh-public-key \"$SSH_PUBLIC_KEY\""
+    run "add rba user $SSH_USERNAME roles $SSH_USER_ROLE"
+    echo "SSH user and key configured for: $SSH_USERNAME"
 fi
 
 # Configure syslog if enabled
@@ -194,5 +205,9 @@ fi
 echo "Additional filesystem or custom commands can be added here..."
 
 # Script finishes
+echo "=========================================="
 echo "Configuration script completed successfully."
+echo "Completed: $(date)"
+echo "Log file: $LOGFILE"
+echo "=========================================="
 exit
