@@ -13,7 +13,7 @@ MOTD_ENABLED="off"
 
 # EXPERT PASSWORD AND SESSION SETTINGS
 EXPERT_PASSWORD_HASH='$6$EKyD28XSeApxVKAc$jdbH9i/tS.UvEbcU3qxVMPMdgwXAMxMzrhKUScSVmMDy30VO2sBBDJ0OMEkgMxrR3eFD7YnT9p0ZF2jcHH5ln/'
-INACTIVITY_TIMEOUT="9600"
+INACTIVITY_TIMEOUT="720"
 
 # PROXY SETTINGS (configure proxy details and enable if needed)
 PROXY_ENABLED="false"
@@ -59,12 +59,11 @@ SSH_PUBLIC_KEY="YOUR_SSH_PUBLIC_KEY_HERE"
 # SYSLOG SERVER SETTINGS (configure server details and enable if needed)
 SYSLOG_ENABLED="true"
 SYSLOG_SERVER_IP="1.2.3.4"
-SYSLOG_LEVEL="3"
+SYSLOG_LEVEL="all"
 
 # SNMP SETTINGS (configure SNMP details and enable if needed)
 SNMP_ENABLED="true"
 SNMP_AGENT_STATE="on"
-SNMP_AGENT_INTERFACE="any"
 SNMP_CONTACT="dmorris@checkpoint.com"
 SNMP_TRAP_RECEIVER_IP="1.2.3.5"
 SNMP_TRAP_VERSION_V3="v3"
@@ -177,7 +176,6 @@ fi
 if [ "$SNMP_ENABLED" = "true" ]; then
     echo "Configuring SNMP..."
     run "set snmp agent $SNMP_AGENT_STATE"
-    run "set snmp agent $SNMP_AGENT_INTERFACE"
     run "set snmp contact \"$SNMP_CONTACT\""
     run "set snmp traps receiver $SNMP_TRAP_RECEIVER_IP version $SNMP_TRAP_VERSION_V3"
     run "set snmp traps receiver $SNMP_TRAP_RECEIVER_IP community $SNMP_COMMUNITY version $SNMP_TRAP_VERSION_V2"
