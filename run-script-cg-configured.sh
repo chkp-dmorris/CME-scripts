@@ -83,6 +83,27 @@ DNS_SECONDARY="1.2.3.5"
 DNS_SUFFIX="checkpoint.com"
 DOMAIN_NAME="checkpoint.com"
 
+# CUSTOM CLISH COMMANDS (add your own CLISH commands here)
+CUSTOM_CLISH_ENABLED="false"
+# Add your custom CLISH commands in the array below (one command per line)
+# Example: CUSTOM_CLISH_COMMANDS=("set interface eth1 ipv4-address 192.168.1.1 mask-length 24" "set static-route 0.0.0.0/0 nexthop gateway address 192.168.1.254 on")
+# Example: 
+# CUSTOM_CLISH_COMMANDS=("set interface eth1 ipv4-address 192.168.1.1 mask-length 24" "set static-route 0.0.0.0/0 nexthop gateway address 192.168.1.254 on")
+CUSTOM_CLISH_COMMANDS=(
+)
+    "# YOUR_CUSTOM_COMMAND_3"
+)
+# CUSTOM BASH COMMANDS (add your own bash/shell commands here - NOT CLISH!)
+# WARNING: These are BASH commands that run OUTSIDE of clish!
+# Do NOT put clish commands here - use CUSTOM_CLISH_COMMANDS above for clish commands
+# Examples of bash commands: file operations, system commands, scripts, etc.
+# Example: CUSTOM_BASH_COMMANDS=("echo 'Custom message' >> /var/log/custom.log" "chmod 755 /var/opt/CPshrd-R81/tmp_dir/my_script.sh" "/opt/custom/post_install.sh")
+CUSTOM_BASH_COMMANDS=(
+    "# echo 'Gateway configured successfully' >> /var/log/deployment.log"
+    "# mkdir -p /var/log/custom"
+    "# /path/to/your/custom_script.sh"
+)
+
 # =============================================================================
 # SCRIPT EXECUTION BEGINS HERE
 # =============================================================================
@@ -210,6 +231,42 @@ fi
 
 # Filesystem or other commands section
 echo "Additional filesystem or custom commands can be added here..."
+
+# Execute custom CLISH commands if enabled
+if [ "$CUSTOM_CLISH_ENABLED" = "true" ]; then
+    echo "Executing custom CLISH commands..."
+    for cmd in "${CUSTOM_CLISH_COMMANDS[@]}"; do
+        # Skip commented lines (starting with #)
+        if [[ ! "$cmd" =~ ^[[:space:]]*# ]]; then
+            run "$cmd"
+        fi
+    done
+    echo "Custom CLISH commands completed."
+fi
+
+# Save configuration to make it persistent across reboots (after all commands)
+echo "Saving configuration..."
+run "save config"
+
+# Execute custom bash commands if enabled (runs outside of clish)
+if [ "$CUSTOM_BASH_ENABLED" = "true" ]; then
+    echo "=========================================="
+    echo "EXECUTING CUSTOM BASH COMMANDS (NON-CLISH)"
+    echo "=========================================="
+    echo "WARNING: These commands run in bash shell, NOT in clish!"
+    echo "Do NOT include clish commands here - use CUSTOM_CLISH_COMMANDS instead."
+    
+    for cmd in "${CUSTOM_BASH_COMMANDS[@]}"; do
+        # Skip commented lines (starting with #)
+        if [[ ! "$cmd" =~ ^[[:space:]]*# ]]; then
+            echo "Executing bash command: $cmd"
+            # Execute directly in bash (not clish)
+            eval "$cmd"
+        fi
+    done
+    echo "Custom bash commands completed."
+    echo "=========================================="
+fi
 
 # Script finishes
 echo "=========================================="
