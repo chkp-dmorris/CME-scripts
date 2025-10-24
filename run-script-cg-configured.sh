@@ -5,15 +5,15 @@
 # =============================================================================
 
 # BANNER MESSAGE CONFIGURATION (customize your banner messages)
-BANNER_ENABLED="on"
+BANNER_ENABLED="true"
 BANNER_LINE1="Test line 1"
 BANNER_LINE2="Test line 2"
 BANNER_LINE3="Test line 3"
 MOTD_ENABLED="off"
 
-# EXPERT PASSWORD AND SESSION SETTINGS
-EXPERT_PASSWORD_HASH='$6$EKyD28XSeApxVKAc$jdbH9i/tS.UvEbcU3qxVMPMdgwXAMxMzrhKUScSVmMDy30VO2sBBDJ0OMEkgMxrR3eFD7YnT9p0ZF2jcHH5ln/'
-INACTIVITY_TIMEOUT="720"
+# EXPERT PASSWORD AND SESSION SETTINGS (Uncomment and set values to enable)
+# EXPERT_PASSWORD_HASH='$6$EKyD28XSeApxVKAc$jdbH9i/tS.UvEbcU3qxVMPMdgwXAMxMzrhKUScSVmMDy30VO2sBBDJ0OMEkgMxrR3eFD7YnT9p0ZF2jcHH5ln/'
+# INACTIVITY_TIMEOUT="720"
 
 # PROXY SETTINGS (configure proxy details and enable if needed)
 PROXY_ENABLED="false"
@@ -84,24 +84,25 @@ DNS_SUFFIX="checkpoint.com"
 DOMAIN_NAME="checkpoint.com"
 
 # CUSTOM CLISH COMMANDS (add your own CLISH commands here)
-CUSTOM_CLISH_ENABLED="false"
+CUSTOM_CLISH_ENABLED="true"
 # Add your custom CLISH commands in the array below (one command per line)
-# Example: CUSTOM_CLISH_COMMANDS=("set interface eth1 ipv4-address 192.168.1.1 mask-length 24" "set static-route 0.0.0.0/0 nexthop gateway address 192.168.1.254 on")
-# Example: 
-# CUSTOM_CLISH_COMMANDS=("set interface eth1 ipv4-address 192.168.1.1 mask-length 24" "set static-route 0.0.0.0/0 nexthop gateway address 192.168.1.254 on")
+# Example: CUSTOM_CLISH_COMMANDS=( "set static-route 0.0.0.0/0 nexthop gateway address 192.168.1.254 on")
 CUSTOM_CLISH_COMMANDS=(
-)
+    "set static-route 23.23.23.0/24 nexthop gateway address 172.17.1.1 on"
+    "# YOUR_CUSTOM_COMMAND_2"
     "# YOUR_CUSTOM_COMMAND_3"
 )
+
 # CUSTOM BASH COMMANDS (add your own bash/shell commands here - NOT CLISH!)
 # WARNING: These are BASH commands that run OUTSIDE of clish!
 # Do NOT put clish commands here - use CUSTOM_CLISH_COMMANDS above for clish commands
 # Examples of bash commands: file operations, system commands, scripts, etc.
 # Example: CUSTOM_BASH_COMMANDS=("echo 'Custom message' >> /var/log/custom.log" "chmod 755 /var/opt/CPshrd-R81/tmp_dir/my_script.sh" "/opt/custom/post_install.sh")
+CUSTOM_BASH_ENABLED="true"
 CUSTOM_BASH_COMMANDS=(
-    "# echo 'Gateway configured successfully' >> /var/log/deployment.log"
-    "# mkdir -p /var/log/custom"
-    "# /path/to/your/custom_script.sh"
+    "echo 'Gateway configured successfully with cme script' >> /var/log/deployment.log"
+    "mkdir -p /var/log/custom"
+    "echo 'this works' >> /var/log/custom/test.log"
 )
 
 # =============================================================================
@@ -124,23 +125,39 @@ lock="$(confLock -o -iadmin)"
 function run {
         local cmd="$1"
         echo "Executing: $cmd"
-        clish -l "$lock" -s -c "$cmd"
+        if clish -l "$lock" -s -c "$cmd"; then
+            echo "SUCCESS: $cmd"
+        else
+            echo "ERROR: Command failed: $cmd"
+            return 1
+        fi
 }
 
 # Set banner message for compliance
-echo "Configuring banner messages..."
-run "set message banner $BANNER_ENABLED"
-if [ "$BANNER_ENABLED" = "on" ]; then
+if [ "$BANNER_ENABLED" = "true" ]; then
+    echo "Configuring banner messages..."
+    run "set message banner on"
+    # Use the original syntax that was working in your log
     run "set message banner on line msgvalue \"$BANNER_LINE1\""
     run "set message banner on line msgvalue \"$BANNER_LINE2\""
     run "set message banner on line msgvalue \"$BANNER_LINE3\""
+    run "set message motd $MOTD_ENABLED"
+else
+    echo "Skipping banner configuration (disabled)..."
 fi
-run "set message motd $MOTD_ENABLED"
 
 # Set expert password hash and session timeout
 echo "Configuring expert password and session timeout..."
-run "set expert-password-hash $EXPERT_PASSWORD_HASH"
-run "set inactivity-timeout $INACTIVITY_TIMEOUT"
+if [ -n "$EXPERT_PASSWORD_HASH" ]; then
+    run "set expert-password-hash $EXPERT_PASSWORD_HASH"
+else
+    echo "Skipping expert password configuration (not defined)..."
+fi
+if [ -n "$INACTIVITY_TIMEOUT" ]; then
+    run "set inactivity-timeout $INACTIVITY_TIMEOUT"
+else
+    echo "Skipping inactivity timeout configuration (not defined)..."
+fi
 
 # Set proxy if enabled
 if [ "$PROXY_ENABLED" = "true" ]; then
@@ -236,8 +253,9 @@ echo "Additional filesystem or custom commands can be added here..."
 if [ "$CUSTOM_CLISH_ENABLED" = "true" ]; then
     echo "Executing custom CLISH commands..."
     for cmd in "${CUSTOM_CLISH_COMMANDS[@]}"; do
-        # Skip commented lines (starting with #)
-        if [[ ! "$cmd" =~ ^[[:space:]]*# ]]; then
+        # Skip commented lines (starting with #) or empty lines
+        if [[ ! "$cmd" =~ ^[[:space:]]*# ]] && [[ -n "$cmd" ]]; then
+            echo "Running custom CLISH: $cmd"
             run "$cmd"
         fi
     done
@@ -257,11 +275,15 @@ if [ "$CUSTOM_BASH_ENABLED" = "true" ]; then
     echo "Do NOT include clish commands here - use CUSTOM_CLISH_COMMANDS instead."
     
     for cmd in "${CUSTOM_BASH_COMMANDS[@]}"; do
-        # Skip commented lines (starting with #)
-        if [[ ! "$cmd" =~ ^[[:space:]]*# ]]; then
+        # Skip commented lines (starting with #) or empty lines
+        if [[ ! "$cmd" =~ ^[[:space:]]*# ]] && [[ -n "$cmd" ]]; then
             echo "Executing bash command: $cmd"
-            # Execute directly in bash (not clish)
-            eval "$cmd"
+            # Execute directly in bash (not clish) with error handling
+            if eval "$cmd"; then
+                echo "SUCCESS: $cmd"
+            else
+                echo "ERROR: Failed to execute: $cmd"
+            fi
         fi
     done
     echo "Custom bash commands completed."
