@@ -5,14 +5,14 @@
 # =============================================================================
 
 # BANNER MESSAGE CONFIGURATION (customize your banner messages)
-BANNER_ENABLED="true"
-BANNER_LINE1="Test line 1"
-BANNER_LINE2="Test line 2"
-BANNER_LINE3="Test line 3"
+BANNER_ENABLED="false"
+BANNER_LINE1="YOUR_BANNER_LINE_1"
+BANNER_LINE2="YOUR_BANNER_LINE_2"
+BANNER_LINE3="YOUR_BANNER_LINE_3"
 MOTD_ENABLED="off"
 
 # EXPERT PASSWORD AND SESSION SETTINGS (Uncomment and set values to enable)
-# EXPERT_PASSWORD_HASH='$6$EKyD28XSeApxVKAc$jdbH9i/tS.UvEbcU3qxVMPMdgwXAMxMzrhKUScSVmMDy30VO2sBBDJ0OMEkgMxrR3eFD7YnT9p0ZF2jcHH5ln/'
+# EXPERT_PASSWORD_HASH='YOUR_EXPERT_PASSWORD_HASH_HERE'
 # INACTIVITY_TIMEOUT="720"
 
 # PROXY SETTINGS (configure proxy details and enable if needed)
@@ -57,38 +57,38 @@ SSH_USER_ROLE="YOUR_SSH_USER_ROLE"
 SSH_PUBLIC_KEY="YOUR_SSH_PUBLIC_KEY_HERE"
 
 # SYSLOG SERVER SETTINGS (configure server details and enable if needed)
-SYSLOG_ENABLED="true"
-SYSLOG_SERVER_IP="1.2.3.4"
+SYSLOG_ENABLED="false"
+SYSLOG_SERVER_IP="YOUR_SYSLOG_SERVER_IP"
 SYSLOG_LEVEL="all"
 
 # SNMP SETTINGS (configure SNMP details and enable if needed)
-SNMP_ENABLED="true"
+SNMP_ENABLED="false"
 SNMP_AGENT_STATE="on"
-SNMP_CONTACT="dmorris@checkpoint.com"
-SNMP_TRAP_RECEIVER_IP="1.2.3.5"
+SNMP_CONTACT="YOUR_EMAIL@COMPANY.COM"
+SNMP_TRAP_RECEIVER_IP="YOUR_SNMP_SERVER_IP"
 SNMP_VERSION="v3"
 SNMP_COMMUNITY="public"
 
 # NTP AND TIMEZONE SETTINGS (configure time settings and enable if needed)
-NTP_ENABLED="true"
-NTP_PRIMARY_SERVER="1.2.3.5"
-NTP_SECONDARY_SERVER="1.2.3.6"
+NTP_ENABLED="false"
+NTP_PRIMARY_SERVER="YOUR_PRIMARY_NTP_SERVER"
+NTP_SECONDARY_SERVER="YOUR_SECONDARY_NTP_SERVER"
 NTP_VERSION="4"
-TIMEZONE="America / New_York"
+TIMEZONE="YOUR_TIMEZONE"
 
 # DNS SETTINGS (configure DNS details and enable if needed)
-DNS_ENABLED="true"
-DNS_PRIMARY="1.2.3.4"
-DNS_SECONDARY="1.2.3.5"
-DNS_SUFFIX="checkpoint.com"
-DOMAIN_NAME="checkpoint.com"
+DNS_ENABLED="false"
+DNS_PRIMARY="YOUR_PRIMARY_DNS"
+DNS_SECONDARY="YOUR_SECONDARY_DNS"
+DNS_SUFFIX="YOUR_DOMAIN.COM"
+DOMAIN_NAME="YOUR_DOMAIN.COM"
 
 # CUSTOM CLISH COMMANDS (add your own CLISH commands here)
-CUSTOM_CLISH_ENABLED="true"
+CUSTOM_CLISH_ENABLED="false"
 # Add your custom CLISH commands in the array below (one command per line)
 # Example: CUSTOM_CLISH_COMMANDS=( "set static-route 0.0.0.0/0 nexthop gateway address 192.168.1.254 on")
 CUSTOM_CLISH_COMMANDS=(
-    "set static-route 23.23.23.0/24 nexthop gateway address 172.17.1.1 on"
+    "# set static-route 23.23.23.0/24 nexthop gateway address 172.17.1.1 on"
     "# YOUR_CUSTOM_COMMAND_2"
     "# YOUR_CUSTOM_COMMAND_3"
 )
@@ -98,11 +98,11 @@ CUSTOM_CLISH_COMMANDS=(
 # Do NOT put clish commands here - use CUSTOM_CLISH_COMMANDS above for clish commands
 # Examples of bash commands: file operations, system commands, scripts, etc.
 # Example: CUSTOM_BASH_COMMANDS=("echo 'Custom message' >> /var/log/custom.log" "chmod 755 /var/opt/CPshrd-R81/tmp_dir/my_script.sh" "/opt/custom/post_install.sh")
-CUSTOM_BASH_ENABLED="true"
+CUSTOM_BASH_ENABLED="false"
 CUSTOM_BASH_COMMANDS=(
-    "echo 'Gateway configured successfully with cme script' >> /var/log/deployment.log"
-    "mkdir -p /var/log/custom"
-    "echo 'this works' >> /var/log/custom/test.log"
+    "# echo 'Gateway configured successfully with cme script' >> /var/log/deployment.log"
+    "# mkdir -p /var/log/custom"
+    "# echo 'this works' >> /var/log/custom/test.log"
 )
 
 # =============================================================================
