@@ -1,3 +1,6 @@
-cme_mgmt_helper.sh
-cme_gw_helper - Copy.sh
-run-script-cg.sh
+
+# Ignore everything
+*
+# But not these files
+!cme_gateways_config.sh
+!README.md
