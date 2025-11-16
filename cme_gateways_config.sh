@@ -1,0 +1,299 @@
+#!/bin/bash
+
+# =============================================================================
+# Check Point Gateway Configuration Script - Configured Version
+# =============================================================================
+
+# BANNER MESSAGE CONFIGURATION (customize your banner messages)
+BANNER_ENABLED="false"
+BANNER_LINE1="YOUR_BANNER_LINE_1"
+BANNER_LINE2="YOUR_BANNER_LINE_2"
+BANNER_LINE3="YOUR_BANNER_LINE_3"
+MOTD_ENABLED="off"
+
+# EXPERT PASSWORD AND SESSION SETTINGS (Uncomment and set values to enable)
+# EXPERT_PASSWORD_HASH='YOUR_EXPERT_PASSWORD_HASH_HERE'
+# INACTIVITY_TIMEOUT="720"
+
+# PROXY SETTINGS (configure proxy details and enable if needed)
+PROXY_ENABLED="false"
+PROXY_ADDRESS="YOUR_PROXY_SERVER_IP"
+PROXY_PORT="YOUR_PROXY_PORT"
+
+# RBA ROLES (configure role names and enable if needed)
+RBA_ENABLED="false"
+RBA_ROLE_TACP0="YOUR_LEVEL0_ROLE_NAME"
+RBA_ROLE_TACP15="YOUR_ADMIN_ROLE_NAME"
+RBA_TACP0_FEATURES="YOUR_TACP0_FEATURES"
+
+# TACACS+ SERVER SETTINGS (configure values and enable if needed)
+TACACS_ENABLED="false"
+TACACS_SERVER_IP="YOUR_TACACS_SERVER_IP"
+TACACS_SECRET_KEY="YOUR_SECRET_KEY"
+TACACS_TIMEOUT="5"
+TACACS_USER_UID="0"
+
+# LOCAL USER SETTINGS (configure user details and enable if needed)
+LOCAL_USER_ENABLED="false"
+LOCAL_USERNAME="YOUR_USERNAME"
+LOCAL_USER_UID="0"
+LOCAL_USER_GID="0"
+LOCAL_USER_HOMEDIR="/home/YOUR_USERNAME"
+LOCAL_USER_SHELL="/etc/cli.sh"
+LOCAL_USER_REALNAME="YOUR_REAL_NAME"
+LOCAL_USER_PASSWORD_HASH='YOUR_PASSWORD_HASH'
+LOCAL_USER_ROLE="YOUR_USER_ROLE"
+
+# SSH KEY CONFIGURATION (configure SSH user and keys, enable if needed)
+SSH_KEYS_ENABLED="false"
+SSH_USERNAME="YOUR_SSH_USERNAME"
+SSH_USER_UID="YOUR_SSH_USER_UID"
+SSH_USER_GID="YOUR_SSH_USER_GID"
+SSH_USER_HOMEDIR="/home/YOUR_SSH_USERNAME"
+SSH_USER_SHELL="/etc/cli.sh"
+SSH_USER_REALNAME="YOUR_SSH_USER_REALNAME"
+SSH_USER_PASSWORD_HASH="YOUR_SSH_USER_PASSWORD_HASH"
+SSH_USER_ROLE="YOUR_SSH_USER_ROLE"
+SSH_PUBLIC_KEY="YOUR_SSH_PUBLIC_KEY_HERE"
+
+# SYSLOG SERVER SETTINGS (configure server details and enable if needed)
+SYSLOG_ENABLED="false"
+SYSLOG_SERVER_IP="YOUR_SYSLOG_SERVER_IP"
+SYSLOG_LEVEL="all"
+
+# SNMP SETTINGS (configure SNMP details and enable if needed)
+SNMP_ENABLED="false"
+SNMP_AGENT_STATE="on"
+SNMP_CONTACT="YOUR_EMAIL@COMPANY.COM"
+SNMP_TRAP_RECEIVER_IP="YOUR_SNMP_SERVER_IP"
+SNMP_VERSION="v3"
+SNMP_COMMUNITY="public"
+
+# NTP AND TIMEZONE SETTINGS (configure time settings and enable if needed)
+NTP_ENABLED="false"
+NTP_PRIMARY_SERVER="YOUR_PRIMARY_NTP_SERVER"
+NTP_SECONDARY_SERVER="YOUR_SECONDARY_NTP_SERVER"
+NTP_VERSION="4"
+TIMEZONE="YOUR_TIMEZONE"
+
+# DNS SETTINGS (configure DNS details and enable if needed)
+DNS_ENABLED="false"
+DNS_PRIMARY="YOUR_PRIMARY_DNS"
+DNS_SECONDARY="YOUR_SECONDARY_DNS"
+DNS_SUFFIX="YOUR_DOMAIN.COM"
+DOMAIN_NAME="YOUR_DOMAIN.COM"
+
+# CUSTOM CLISH COMMANDS (add your own CLISH commands here)
+CUSTOM_CLISH_ENABLED="false"
+# Add your custom CLISH commands in the array below (one command per line)
+# Example: CUSTOM_CLISH_COMMANDS=( "set static-route 0.0.0.0/0 nexthop gateway address 192.168.1.254 on")
+CUSTOM_CLISH_COMMANDS=(
+    "# set static-route 23.23.23.0/24 nexthop gateway address 172.17.1.1 on"
+    "# YOUR_CUSTOM_COMMAND_2"
+    "# YOUR_CUSTOM_COMMAND_3"
+)
+
+# CUSTOM BASH COMMANDS (add your own bash/shell commands here - NOT CLISH!)
+# WARNING: These are BASH commands that run OUTSIDE of clish!
+# Do NOT put clish commands here - use CUSTOM_CLISH_COMMANDS above for clish commands
+# Examples of bash commands: file operations, system commands, scripts, etc.
+# Example: CUSTOM_BASH_COMMANDS=("echo 'Custom message' >> /var/log/custom.log" "chmod 755 /var/opt/CPshrd-R81/tmp_dir/my_script.sh" "/opt/custom/post_install.sh")
+CUSTOM_BASH_ENABLED="false"
+CUSTOM_BASH_COMMANDS=(
+    "# echo 'Gateway configured successfully with cme script' >> /var/log/deployment.log"
+    "# mkdir -p /var/log/custom"
+    "# echo 'this works' >> /var/log/custom/test.log"
+)
+
+# =============================================================================
+# SCRIPT EXECUTION BEGINS HERE
+# =============================================================================
+
+# Setup logging
+LOGFILE="/var/log/cme_custom_gateway_scripts.log"
+exec > >(tee -a "$LOGFILE") 2>&1
+
+echo "=========================================="
+echo "Check Point Gateway Configuration Script"
+echo "Started: $(date)"
+echo "=========================================="
+
+set -e
+lock=""
+lock="$(confLock -o -iadmin)"
+
+function run {
+        local cmd="$1"
+        echo "Executing: $cmd"
+        if clish -l "$lock" -s -c "$cmd"; then
+            echo "SUCCESS: $cmd"
+        else
+            echo "ERROR: Command failed: $cmd"
+            return 1
+        fi
+}
+
+# Set banner message for compliance
+if [ "$BANNER_ENABLED" = "true" ]; then
+    echo "Configuring banner messages..."
+    run "set message banner on"
+    # Use the original syntax that was working in your log
+    run "set message banner on line msgvalue \"$BANNER_LINE1\""
+    run "set message banner on line msgvalue \"$BANNER_LINE2\""
+    run "set message banner on line msgvalue \"$BANNER_LINE3\""
+    run "set message motd $MOTD_ENABLED"
+else
+    echo "Skipping banner configuration (disabled)..."
+fi
+
+# Set expert password hash and session timeout
+echo "Configuring expert password and session timeout..."
+if [ -n "$EXPERT_PASSWORD_HASH" ]; then
+    run "set expert-password-hash $EXPERT_PASSWORD_HASH"
+else
+    echo "Skipping expert password configuration (not defined)..."
+fi
+if [ -n "$INACTIVITY_TIMEOUT" ]; then
+    run "set inactivity-timeout $INACTIVITY_TIMEOUT"
+else
+    echo "Skipping inactivity timeout configuration (not defined)..."
+fi
+
+# Set proxy if enabled
+if [ "$PROXY_ENABLED" = "true" ]; then
+    echo "Configuring proxy settings..."
+    run "set proxy address $PROXY_ADDRESS port $PROXY_PORT"
+fi
+
+# Add RBA roles if enabled
+if [ "$RBA_ENABLED" = "true" ]; then
+    echo "Configuring RBA roles..."
+    run "add rba role $RBA_ROLE_TACP0 domain-type System readwrite-features $RBA_TACP0_FEATURES"
+    run "add rba role $RBA_ROLE_TACP15 domain-type System all-features"
+fi
+
+# Add TACACS+ server if enabled
+if [ "$TACACS_ENABLED" = "true" ]; then
+    echo "Configuring TACACS+ server..."
+    run "add aaa tacacs-servers priority 1 server $TACACS_SERVER_IP key $TACACS_SECRET_KEY timeout $TACACS_TIMEOUT"
+    run "set aaa tacacs-servers user-uid $TACACS_USER_UID"
+    run "set aaa tacacs-servers state on"
+fi
+
+# Add local user if enabled
+if [ "$LOCAL_USER_ENABLED" = "true" ]; then
+    echo "Configuring local user..."
+    run "add user $LOCAL_USERNAME uid $LOCAL_USER_UID homedir $LOCAL_USER_HOMEDIR"
+    run "set user $LOCAL_USERNAME gid $LOCAL_USER_GID shell $LOCAL_USER_SHELL"
+    run "set user $LOCAL_USERNAME realname \"$LOCAL_USER_REALNAME\""
+    run "set user $LOCAL_USERNAME password-hash $LOCAL_USER_PASSWORD_HASH"
+    run "add rba user $LOCAL_USERNAME roles $LOCAL_USER_ROLE"
+fi
+
+# Configure SSH keys if enabled (using CLISH commands)
+if [ "$SSH_KEYS_ENABLED" = "true" ]; then
+    echo "Configuring SSH user and keys..."
+    # Create/configure the SSH user with all necessary parameters
+    run "add user $SSH_USERNAME uid $SSH_USER_UID homedir $SSH_USER_HOMEDIR"
+    run "set user $SSH_USERNAME gid $SSH_USER_GID shell $SSH_USER_SHELL"
+    run "set user $SSH_USERNAME realname \"$SSH_USER_REALNAME\""
+    run "set user $SSH_USERNAME password-hash $SSH_USER_PASSWORD_HASH"
+    run "set user $SSH_USERNAME ssh-public-key \"$SSH_PUBLIC_KEY\""
+    run "add rba user $SSH_USERNAME roles $SSH_USER_ROLE"
+    echo "SSH user and key configured for: $SSH_USERNAME"
+fi
+
+# Configure syslog if enabled
+if [ "$SYSLOG_ENABLED" = "true" ]; then
+    echo "Configuring syslog server..."
+    run "add syslog log-remote-address $SYSLOG_SERVER_IP level $SYSLOG_LEVEL"
+fi
+
+# Configure SNMP if enabled
+if [ "$SNMP_ENABLED" = "true" ]; then
+    echo "Configuring SNMP..."
+    run "set snmp agent $SNMP_AGENT_STATE"
+    run "set snmp contact \"$SNMP_CONTACT\""
+    
+    # Configure SNMP trap receiver based on version
+    if [ "$SNMP_VERSION" = "v3" ]; then
+        # SNMP v3 uses USM authentication, no community string
+        run "add snmp traps receiver $SNMP_TRAP_RECEIVER_IP version v3"
+    elif [ "$SNMP_VERSION" = "v2" ] || [ "$SNMP_VERSION" = "v2c" ]; then
+        # SNMP v2/v2c requires community string
+        run "add snmp traps receiver $SNMP_TRAP_RECEIVER_IP community $SNMP_COMMUNITY version v2"
+    elif [ "$SNMP_VERSION" = "v1" ]; then
+        # SNMP v1 requires community string
+        run "add snmp traps receiver $SNMP_TRAP_RECEIVER_IP community $SNMP_COMMUNITY version v1"
+    fi
+fi
+
+# Configure NTP and timezone if enabled
+if [ "$NTP_ENABLED" = "true" ]; then
+    echo "Configuring NTP and timezone..."
+    run "set ntp active on"
+    run "set ntp server primary $NTP_PRIMARY_SERVER version $NTP_VERSION"
+    run "set ntp server secondary $NTP_SECONDARY_SERVER version $NTP_VERSION"
+    run "set timezone $TIMEZONE"
+fi
+
+# Configure DNS if enabled
+if [ "$DNS_ENABLED" = "true" ]; then
+    echo "Configuring DNS settings..."
+    run "set dns primary $DNS_PRIMARY"
+    run "set dns secondary $DNS_SECONDARY"
+    run "set dns suffix $DNS_SUFFIX"
+    run "set domainname $DOMAIN_NAME"
+fi
+
+# Filesystem or other commands section
+echo "Additional filesystem or custom commands can be added here..."
+
+# Execute custom CLISH commands if enabled
+if [ "$CUSTOM_CLISH_ENABLED" = "true" ]; then
+    echo "Executing custom CLISH commands..."
+    for cmd in "${CUSTOM_CLISH_COMMANDS[@]}"; do
+        # Skip commented lines (starting with #) or empty lines
+        if [[ ! "$cmd" =~ ^[[:space:]]*# ]] && [[ -n "$cmd" ]]; then
+            echo "Running custom CLISH: $cmd"
+            run "$cmd"
+        fi
+    done
+    echo "Custom CLISH commands completed."
+fi
+
+# Save configuration to make it persistent across reboots (after all commands)
+echo "Saving configuration..."
+run "save config"
+
+# Execute custom bash commands if enabled (runs outside of clish)
+if [ "$CUSTOM_BASH_ENABLED" = "true" ]; then
+    echo "=========================================="
+    echo "EXECUTING CUSTOM BASH COMMANDS (NON-CLISH)"
+    echo "=========================================="
+    echo "WARNING: These commands run in bash shell, NOT in clish!"
+    echo "Do NOT include clish commands here - use CUSTOM_CLISH_COMMANDS instead."
+    
+    for cmd in "${CUSTOM_BASH_COMMANDS[@]}"; do
+        # Skip commented lines (starting with #) or empty lines
+        if [[ ! "$cmd" =~ ^[[:space:]]*# ]] && [[ -n "$cmd" ]]; then
+            echo "Executing bash command: $cmd"
+            # Execute directly in bash (not clish) with error handling
+            if eval "$cmd"; then
+                echo "SUCCESS: $cmd"
+            else
+                echo "ERROR: Failed to execute: $cmd"
+            fi
+        fi
+    done
+    echo "Custom bash commands completed."
+    echo "=========================================="
+fi
+
+# Script finishes
+echo "=========================================="
+echo "Configuration script completed successfully."
+echo "Completed: $(date)"
+echo "Log file: $LOGFILE"
+echo "=========================================="
+exit
