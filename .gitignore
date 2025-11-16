@@ -1,6 +1,0 @@
-
-# Ignore everything
-*
-# But not these files
-!cme_gateways_config.sh
-!README.md
