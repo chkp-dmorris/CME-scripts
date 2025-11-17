@@ -53,6 +53,18 @@ Check Point Cloud Management Extension (CME) is a tool for automating the deploy
 - Ensure the script is executable and has the correct shebang (`#!/bin/bash`).
 - If the script fails, check for syntax errors or missing permissions.
 - For more details, see the official CME Admin Guide: [Check Point CME Documentation](https://sc1.checkpoint.com/documents/IaaS/WebAdminGuides/EN/CP_CME/Content/Topics-CME/CME_Structure_and_Configurations.htm)
+
+### Troubleshooting on Smart Center
+
+- For deeper troubleshooting of CME operations on the management server (Smart Center), check the log file:
+   ```
+   /var/log/CPcme/cme.elg
+   ```
+- You can monitor this log in real time while scaling out gateways with:
+   ```bash
+   tail -f /var/log/CPcme/cme.elg
+   ```
+- This log provides detailed information about CME actions, errors, and script execution status on the management server.
 ## How to Run
 
 
