@@ -1,3 +1,13 @@
+### Configuring the Custom Gateway Script
+
+### What is CME?
+Check Point Cloud Management Extension (CME) is a tool for automating the deployment and configuration of Check Point Security Gateways in cloud environments (AWS, Azure, GCP, etc.).
+
+### How CME Uses Custom Scripts
+- CME can run a custom shell script on each gateway after deployment and initial policy installation.
+- The script is specified in the CME template.
+- The script can be placed anywhere on the management server, but must be accessible and executable by the CME process.
+- The script runs as root on the gateway.
 # Script Comparison: Simple vs. Advanced
 
 **cme_gateway_simple.sh**
@@ -13,14 +23,49 @@
 - Best for production, repeatable, or complex deployments
 ## CME Integration Details (from Admin Guide)
 
-### What is CME?
-Check Point Cloud Management Extension (CME) is a tool for automating the deployment and configuration of Check Point Security Gateways in cloud environments (AWS, Azure, GCP, etc.).
 
-### How CME Uses Custom Scripts
-- CME can run a custom shell script on each gateway after deployment and initial policy installation.
-- The script is specified in the CME template using the `-cg` parameter.
-- The script can be placed anywhere on the management server, but must be accessible and executable by the CME process.
-- The script runs as root on the gateway.
+#### Option 1: Using the SmartConsole GUI
+
+When configuring CME in SmartConsole, you can manage your custom gateway script entirely through the GUI:
+
+**Step 1: Upload the Script to the Script Repository**
+
+Check Point recommends uploading custom scripts to the Smart Center using the Script Repository, which provides a central and secure way to manage scripts.
+
+1. Follow the official guides:
+   - [Check Point SK140852: How to use the Script Repository in SmartConsole](https://support.checkpoint.com/results/sk/sk140852)
+   - [Check Point SmartConsole Admin Guide: Script Repository (R82)](https://sc1.checkpoint.com/documents/R82/SmartConsole_OLH/EN/Topics-OLH/EV8huJ-Wb8glzA2FZyhkbQ2.htm)
+2. In SmartConsole, go to **Manage & Settings > Blades > Script Repository**.
+3. Click **Add** to upload your script (e.g., `cme_gateway_simple.sh` or `cme_gateways_advance.sh`).
+4. Assign the script to the relevant targets or use it in your CME automation workflows.
+
+> Using the Script Repository ensures scripts are versioned, auditable, and easily accessible for automation and troubleshooting.
+
+**Step 2: Reference the Script in the CME Template**
+
+1. In SmartConsole, go to **Cloud Management Extension > CME Templates**.
+2. Edit or create a template.
+3. In the template settings, locate the **Custom Gateway Script** field.
+4. Enter the exact name of the script you uploaded to the Script Repository (e.g., `cme_gateway_simple` or `cme_gateways_advance.`).
+5. Save and apply the template.
+
+This approach allows you to manage and assign scripts through the SmartConsole GUI by referencing the script name as it appears in the Script Repository.
+
+For more details, see the official documentation:  
+[Check Point CME Admin Guide: Configuring CME in SmartConsole (recommended)](https://sc1.checkpoint.com/documents/IaaS/WebAdminGuides/EN/CP_CME/Content/Topics-CME/CME_Structure_and_Configurations.htm#Configuring_CME_in_SmartConsole_(recommended))
+
+#### Option 2: Using the Command Line or Template Parameters
+
+You can also specify the custom gateway script directly in the CME template parameters (for example, when using automation or CLI):
+
+```bash
+-cg '$FWDIR/conf/cme_gateways_advance.sh'
+```
+
+Replace `cme_gateways_advance.sh` with the path and name of your script as needed.
+
+This method is useful for automated deployments, scripting, or when editing template files directly.
+
 
 ### Example CME Template Parameters
 ```
