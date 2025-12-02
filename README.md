@@ -16,7 +16,7 @@ Check Point Cloud Management Extension (CME) is a tool for automating the deploy
 - No advanced logic or feature toggles
 - Best for quick, custom, or one-off configurations
 
-**cme_gateways_advance.sh**
+**cme_gateway_advance.sh**
 - Full-featured, highly configurable script
 - Supports advanced gateway automation (banners, users, NTP, DNS, SNMP, etc.)
 - Uses variables and feature toggles for modular configuration
@@ -38,7 +38,7 @@ Check Point recommends uploading custom scripts to the Smart Center using the Sc
    - [Check Point SK140852: How to use the Script Repository in SmartConsole](https://support.checkpoint.com/results/sk/sk140852)
    - [Check Point SmartConsole Admin Guide: Script Repository (R82)](https://sc1.checkpoint.com/documents/R82/SmartConsole_OLH/EN/Topics-OLH/EV8huJ-Wb8glzA2FZyhkbQ2.htm)
 2. In SmartConsole, go to **Gateway & Servers > Scripts > Scripts Repository**.
-3. Click **Add** to upload your script (e.g., `cme_gateway_simple.sh` or `cme_gateways_advance.sh`).
+3. Click **Add** to upload your script (e.g., `cme_gateway_simple.sh` or `cme_gateway_advance.sh`).
    - **Note:** Script must be under 8KB to upload via GUI
 4. Assign the script to the relevant targets or use it in your CME automation workflows.
 
@@ -49,7 +49,7 @@ Check Point recommends uploading custom scripts to the Smart Center using the Sc
 1. In SmartConsole, go to **Manage & Settings -> CloudGuard Network**
 2. Edit or create a template.
 3. In the template go to CME Attributes, locate the **Gateway Repository script name** field.
-4. Enter the exact name of the script you uploaded to the Script Repository (e.g., `cme_gateway_simple` or `cme_gateways_advance.`).
+4. Enter the exact name of the script you uploaded to the Script Repository (e.g., `cme_gateway_simple` or `cme_gateway_advance.`).
 5. Save and apply the template.
 
 This approach allows you to manage and assign scripts through the SmartConsole GUI by referencing the script name as it appears in the Script Repository.
@@ -64,10 +64,10 @@ You can also specify the custom gateway script directly in the CME template para
 > **Note:** This method is **required** for scripts larger than 8KB, as the SmartConsole GUI has an 8KB file size limit for the Script Repository. For larger scripts, you must place the script file directly on the management server and reference its path in the template.
 
 ```bash
--cg '$FWDIR/conf/cme_gateways_advance.sh'
+-cg '$FWDIR/conf/cme_gateway_advance.sh'
 ```
 
-Replace `cme_gateways_advance.sh` with the path and name of your script as needed.
+Replace `cme_gateway_advance.sh` with the path and name of your script as needed.
 
 This method is useful for:
 - **Large scripts** (over 8KB) that cannot be uploaded via SmartConsole GUI
@@ -81,7 +81,7 @@ This method is useful for:
 -otp 'MyOneTimePassword123' \
 -ver R81.20 \
 -po StandardPolicy \
--cg '$FWDIR/conf/cme_gateways_advance.sh'
+-cg '$FWDIR/conf/cme_gateway_advance.sh'
 ```
 
 
@@ -90,12 +90,12 @@ This method is useful for:
 - Ensure the script has Unix line endings (run `dos2unix` if edited on Windows):
    ```bash
    dos2unix cme_gateway_simple.sh
-   dos2unix cme_gateways_advance.sh
+   dos2unix cme_gateway_advance.sh
    ```
 - Set permissions:
    ```bash
    chmod 755 cme_gateway_simple.sh
-   chmod 755 cme_gateways_advance.sh
+   chmod 755 cme_gateway_advance.sh
    ```
 
 ### When Does CME Run the Script?
@@ -142,7 +142,7 @@ This method is useful for:
 1. Upload the script to your management server (e.g., `/home/admin/cme-scripts/`).
 2. Configure your CME template to use the script with the `-cg` parameter:
    ```bash
-   -cg '$FWDIR/conf/cme_gateways_advance.sh'
+   -cg '$FWDIR/conf/cme_gateway_advance.sh'
    ```
 3. CME will automatically execute the script on the gateway after deployment and initial policy installation. You do not need to run the script manually.
 
@@ -151,7 +151,7 @@ This method is useful for:
 This repository contains two scripts for automating Check Point Security Gateway configuration:
 
 - `cme_gateway_simple.sh`: Minimal, easy-to-edit script for basic gateway setup (CLISH and bash commands)
-- `cme_gateways_advance.sh`: Advanced, feature-rich script for full gateway automation
+- `cme_gateway_advance.sh`: Advanced, feature-rich script for full gateway automation
 
 ## Usage
 
@@ -161,16 +161,16 @@ This repository contains two scripts for automating Check Point Security Gateway
 3. Ensure Unix line endings (especially if edited on Windows):
    ```bash
    dos2unix cme_gateway_simple.sh
-   dos2unix cme_gateways_advance.sh
+   dos2unix cme_gateway_advance.sh
    ```
 4. Make the script executable:
    ```bash
    chmod +x cme_gateway_simple.sh
-   chmod +x cme_gateways_advance.sh
+   chmod +x cme_gateway_advance.sh
    ```
 5. Run manually or configure CME to use the script with the `-cg` parameter:
    ```bash
-   -cg '$FWDIR/conf/cme_gateways_advance.sh'
+   -cg '$FWDIR/conf/cme_gateway_advance.sh'
    ```
 
 ## Logging
@@ -182,7 +182,7 @@ All output is logged to `/var/log/cme_gateway_scripts.elg` on the gateway.
 ```
 /home/admin/cme-scripts/
 ├── cme_gateway_simple.sh
-├── cme_gateways_advance.sh
+├── cme_gateway_advance.sh
 └── versions/
     ├── cme_gateways_advance-v1.0.sh
     └── cme_gateways_advance-v1.1.sh
@@ -203,4 +203,4 @@ echo "Custom bash command here"
 
 ---
 
-For advanced configuration, see comments and sections in `cme_gateways_advance.sh`.
+For advanced configuration, see comments and sections in `cme_gateway_advance.sh`.
