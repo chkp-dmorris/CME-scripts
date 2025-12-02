@@ -28,6 +28,8 @@ Check Point Cloud Management Extension (CME) is a tool for automating the deploy
 
 When configuring CME in SmartConsole, you can manage your custom gateway script entirely through the GUI:
 
+> **Important:** The SmartConsole GUI has an **8KB file size limit** for scripts uploaded through the Script Repository. If your script exceeds 8KB, you must use Option 2 (Command Line or API) instead.
+
 **Step 1: Upload the Script to the Script Repository**
 
 Check Point recommends uploading custom scripts to the Smart Center using the Script Repository, which provides a central and secure way to manage scripts.
@@ -37,6 +39,7 @@ Check Point recommends uploading custom scripts to the Smart Center using the Sc
    - [Check Point SmartConsole Admin Guide: Script Repository (R82)](https://sc1.checkpoint.com/documents/R82/SmartConsole_OLH/EN/Topics-OLH/EV8huJ-Wb8glzA2FZyhkbQ2.htm)
 2. In SmartConsole, go to **Manage & Settings > Blades > Script Repository**.
 3. Click **Add** to upload your script (e.g., `cme_gateway_simple.sh` or `cme_gateways_advance.sh`).
+   - **Note:** Script must be under 8KB to upload via GUI
 4. Assign the script to the relevant targets or use it in your CME automation workflows.
 
 > Using the Script Repository ensures scripts are versioned, auditable, and easily accessible for automation and troubleshooting.
@@ -58,13 +61,19 @@ For more details, see the official documentation:
 
 You can also specify the custom gateway script directly in the CME template parameters (for example, when using automation or CLI):
 
+> **Note:** This method is **required** for scripts larger than 8KB, as the SmartConsole GUI has an 8KB file size limit for the Script Repository. For larger scripts, you must place the script file directly on the management server and reference its path in the template.
+
 ```bash
 -cg '$FWDIR/conf/cme_gateways_advance.sh'
 ```
 
 Replace `cme_gateways_advance.sh` with the path and name of your script as needed.
 
-This method is useful for automated deployments, scripting, or when editing template files directly.
+This method is useful for:
+- **Large scripts** (over 8KB) that cannot be uploaded via SmartConsole GUI
+- Automated deployments and scripting
+- Direct template file editing
+- API-based CME configuration
 
 
 ### Example CME Template Parameters
@@ -101,7 +110,7 @@ This method is useful for automated deployments, scripting, or when editing temp
 
 ### Troubleshooting on Smart Center
 
-- For deeper troubleshooting of CME operations on the management server (Smart Center), check the log file:
+- For deeper troubleshooting of CME operations on the management server (Smart Center), check the CME log file:
    ```
    /var/log/CPcme/cme.elg
    ```
@@ -109,7 +118,18 @@ This method is useful for automated deployments, scripting, or when editing temp
    ```bash
    tail -f /var/log/CPcme/cme.elg
    ```
-- This log provides detailed information about CME actions, errors, and script execution status on the management server.
+- This log provides detailed information about:
+  - **Script execution status** - Success or failure of custom gateway scripts
+  - **Gateway provisioning** - Deployment, configuration, and autoprovision events
+  - **API calls** - Management API operations and responses
+  - **Error tracebacks** - Detailed Python stack traces for failures
+  - **CME service operations** - Scale-out, scale-in, and orchestration activities
+
+**What to look for:**
+- **Success indicators**: Look for log entries showing script completion with exit code 0
+- **Failure indicators**: Look for `ERROR`, `ManagementApiException`, or non-zero exit codes
+- **Script output**: The log includes truncated output from your custom gateway scripts
+- **Timestamps**: All entries are timestamped to correlate with gateway deployment events
 ## How to Run
 
 
