@@ -37,7 +37,7 @@ Check Point recommends uploading custom scripts to the Smart Center using the Sc
 1. Follow the official guides:
    - [Check Point SK140852: How to use the Script Repository in SmartConsole](https://support.checkpoint.com/results/sk/sk140852)
    - [Check Point SmartConsole Admin Guide: Script Repository (R82)](https://sc1.checkpoint.com/documents/R82/SmartConsole_OLH/EN/Topics-OLH/EV8huJ-Wb8glzA2FZyhkbQ2.htm)
-2. In SmartConsole, go to **Manage & Settings > Blades > Script Repository**.
+2. In SmartConsole, go to **Gateway & Servers > Scripts > Scripts Repository**.
 3. Click **Add** to upload your script (e.g., `cme_gateway_simple.sh` or `cme_gateways_advance.sh`).
    - **Note:** Script must be under 8KB to upload via GUI
 4. Assign the script to the relevant targets or use it in your CME automation workflows.
@@ -46,9 +46,9 @@ Check Point recommends uploading custom scripts to the Smart Center using the Sc
 
 **Step 2: Reference the Script in the CME Template**
 
-1. In SmartConsole, go to **Cloud Management Extension > CME Templates**.
+1. In SmartConsole, go to **Manage & Settings -> CloudGuard Network**
 2. Edit or create a template.
-3. In the template settings, locate the **Custom Gateway Script** field.
+3. In the template go to CME Attributes, locate the **Gateway Repository script name** field.
 4. Enter the exact name of the script you uploaded to the Script Repository (e.g., `cme_gateway_simple` or `cme_gateways_advance.`).
 5. Save and apply the template.
 
